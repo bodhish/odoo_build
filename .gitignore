@@ -1,0 +1,8 @@
+# Environment files with secrets
+.env
+
+# Extra addons (mounted at runtime)
+extra-addons/
+
+# Docker artifacts
+*.tar
