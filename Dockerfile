@@ -176,8 +176,18 @@ COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh /usr/local/bin/wait-for-psql.py
 
 # Create directories and set permissions
-RUN mkdir -p /etc/odoo /var/lib/odoo /mnt/extra-addons \
-    && chown -R odoo:odoo /etc/odoo /var/lib/odoo /mnt/extra-addons
+# Create all subdirectories that Odoo expects in data_dir to prevent permission issues with volumes
+RUN mkdir -p /etc/odoo \
+    /var/lib/odoo \
+    /var/lib/odoo/.local \
+    /var/lib/odoo/filestore \
+    /var/lib/odoo/sessions \
+    /var/lib/odoo/addons \
+    /mnt/extra-addons \
+    /mnt/enterprise-addons \
+    /mnt/third-party-addons \
+    && chown -R odoo:odoo /etc/odoo /var/lib/odoo /mnt/extra-addons /mnt/enterprise-addons /mnt/third-party-addons \
+    && chmod 755 /var/lib/odoo /var/lib/odoo/filestore /var/lib/odoo/sessions
 
 # Copy default config
 COPY odoo.conf /etc/odoo/odoo.conf
