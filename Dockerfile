@@ -165,7 +165,6 @@ COPY --from=downloader /usr/lib/python3/dist-packages /usr/lib/python3/dist-pack
 
 # Create odoo binary/wrapper
 RUN echo '#!/usr/bin/env python3' > /usr/bin/odoo \
-    && echo 'import sys; sys.path.insert(0, "/usr/lib/python3/dist-packages")' >> /usr/bin/odoo \
     && echo 'from odoo.cli import main; main()' >> /usr/bin/odoo \
     && chmod +x /usr/bin/odoo \
     && ln -s /usr/bin/odoo /usr/bin/odoo-bin
