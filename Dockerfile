@@ -40,10 +40,10 @@ RUN echo "Downloading Odoo source from: $ODOO_SOURCE_URL" \
        fi \
     && mkdir -p /usr/lib/python3/dist-packages \
     && tar -xzf odoo.tar.gz -C /usr/lib/python3/dist-packages --strip-components=1 \
-    && if [ -f "/usr/lib/python3/dist-packages/odoo/init.py" ]; then \
-           mv /usr/lib/python3/dist-packages/odoo/init.py /usr/lib/python3/dist-packages/odoo/__init__.py; \
-       fi \
-    && rm odoo.tar.gz
+    && rm odoo.tar.gz \
+    && if [ -f "/usr/lib/python3/dist-packages/odoo/init.py" ] && [ ! -f "/usr/lib/python3/dist-packages/odoo/__init__.py" ]; then \
+           cp /usr/lib/python3/dist-packages/odoo/init.py /usr/lib/python3/dist-packages/odoo/__init__.py; \
+       fi
 
 # ============================================
 # Stage 2: Build Python dependencies
@@ -157,7 +157,8 @@ RUN groupadd -g 101 odoo \
     && useradd -u 101 -g odoo -G odoo -d /var/lib/odoo -s /bin/bash odoo
 
 # Copy pre-built Python packages from builder stage
-COPY --from=builder /install /usr/local
+# Note: --prefix=/install creates /install/local/lib/... structure
+COPY --from=builder /install/local /usr/local
 
 # Copy Odoo source from downloader stage
 COPY --from=downloader /usr/lib/python3/dist-packages /usr/lib/python3/dist-packages
@@ -165,7 +166,7 @@ COPY --from=downloader /usr/lib/python3/dist-packages /usr/lib/python3/dist-pack
 # Create odoo binary/wrapper
 RUN echo '#!/usr/bin/env python3' > /usr/bin/odoo \
     && echo 'import sys; sys.path.insert(0, "/usr/lib/python3/dist-packages")' >> /usr/bin/odoo \
-    && echo 'import odoo; odoo.cli.main()' >> /usr/bin/odoo \
+    && echo 'from odoo.cli import main; main()' >> /usr/bin/odoo \
     && chmod +x /usr/bin/odoo \
     && ln -s /usr/bin/odoo /usr/bin/odoo-bin
 
