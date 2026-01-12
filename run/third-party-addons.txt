@@ -1,0 +1,1 @@
+# public https://github.com/ohcnetwork/odoo_connector.git true

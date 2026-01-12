@@ -1,0 +1,1 @@
+. ${0%/*}/odoo.sh odoo $1 localhost 30582

@@ -1,0 +1,17 @@
+# requirements.txt
+qifparse==0.5
+pydantic==2.12.3
+email-validator==2.3.0
+
+# Sentry SDK - use older version to avoid gevent entry point issues
+# Or alternatively, disable gevent integration in your sentry init code
+sentry-sdk[pure_eval]==1.45.0
+
+redis==7.1.0
+
+# Pin gevent/greenlet and their dependencies to match Odoo's requirements for Python 3.11
+# This prevents any dependency from accidentally upgrading them
+gevent==22.10.2
+greenlet==2.0.2
+zope.interface==6.1
+zope.event==5.0
