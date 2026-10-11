@@ -129,10 +129,20 @@ RUN apt-get update && \
         xfonts-base \
     && rm -rf /var/lib/apt/lists/*
 
-# Install wkhtmltopdf
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends wkhtmltopdf \
-    && rm -rf /var/lib/apt/lists/*
+# Install wkhtmltopdf 0.12.6.1 with patched Qt (the build Odoo supports).
+# Debian's wkhtmltopdf package uses unpatched Qt: on x86_64 it segfaults (error -11)
+# under Odoo's limit_memory_hard, and it ignores report headers/footers.
+ARG TARGETARCH
+RUN case "${TARGETARCH:-$(dpkg --print-architecture)}" in \
+        amd64) WKHTMLTOX_ARCH=amd64 WKHTMLTOX_SHA256=98ba0d157b50d36f23bd0dedf4c0aa28c7b0c50fcdcdc54aa5b6bbba81a3941d ;; \
+        arm64) WKHTMLTOX_ARCH=arm64 WKHTMLTOX_SHA256=b6606157b27c13e044d0abbe670301f88de4e1782afca4f9c06a5817f3e03a9c ;; \
+        *) echo "Unsupported architecture for wkhtmltox" >&2; exit 1 ;; \
+    esac \
+    && curl -fsSL -o /tmp/wkhtmltox.deb "https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_${WKHTMLTOX_ARCH}.deb" \
+    && echo "${WKHTMLTOX_SHA256}  /tmp/wkhtmltox.deb" | sha256sum -c - \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends /tmp/wkhtmltox.deb \
+    && rm -rf /var/lib/apt/lists/* /tmp/wkhtmltox.deb
 
 # Install latest postgresql-client from official PostgreSQL repo
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
